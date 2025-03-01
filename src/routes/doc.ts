@@ -1,3 +1,4 @@
+import { createDocument, deleteDocument, findAllDocuments, findDocumentById, updateDocument } from '@/db/document-repo';
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 
 const app = new OpenAPIHono();
@@ -25,8 +26,9 @@ app.openapi(
       },
     },
   }),
-  (c) => {
-    return c.json([]);
+  async (c) => {
+    const docs = await findAllDocuments();
+    return c.json(docs);
   },
 );
 
@@ -60,9 +62,10 @@ app.openapi(
       },
     },
   }),
-  (c) => {
+  async (c) => {
     const newDoc = c.req.valid('json');
-    return c.json({ id: 0 });
+    const res = await createDocument(newDoc);
+    return c.json(res);
   },
 );
 
@@ -70,7 +73,7 @@ app.openapi(
   createRoute({
     tags: ['Document'],
     method: 'get',
-    path: '/:id',
+    path: '/{id}',
     summary: 'Get a document by ID',
     request: {
       params: z.object({
@@ -93,14 +96,26 @@ app.openapi(
         },
         description: 'Get a document by ID',
       },
+      404: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              error: z.string(),
+            }),
+          },
+        },
+        description: 'Document not found',
+      },
     },
   }),
-  (c) => {
-    const id = c.req.param('id');
-    return c.json({
-      id: Number.parseInt(id),
-      content: 'Hello Node.js!',
-    });
+  async (c) => {
+    const id = Number.parseInt(c.req.param('id'));
+    const doc = await findDocumentById(id);
+    if (doc) {
+      return c.json(doc, 200);
+    } else {
+      return c.json({ error: 'Document not found' }, 404);
+    }
   },
 );
 
@@ -108,7 +123,7 @@ app.openapi(
   createRoute({
     tags: ['Document'],
     method: 'put',
-    path: '/:id',
+    path: '/{id}',
     summary: 'Update a document by ID',
     request: {
       params: z.object({
@@ -139,12 +154,27 @@ app.openapi(
         },
         description: 'Update a document by ID',
       },
+      404: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              error: z.string(),
+            }),
+          },
+        },
+        description: 'Document not found',
+      },
     },
   }),
-  (c) => {
-    const id = c.req.param('id');
-    const updatedDoc = c.req.valid('json');
-    return c.json({ id: Number.parseInt(id) });
+  async (c) => {
+    const id = Number.parseInt(c.req.param('id'));
+    const doc = c.req.valid('json');
+    const res = await updateDocument(id, doc);
+    if (res) {
+      return c.json(res, 200);
+    } else {
+      return c.json({ error: 'Document not found' }, 404);
+    }
   },
 );
 
@@ -152,7 +182,7 @@ app.openapi(
   createRoute({
     tags: ['Document'],
     method: 'delete',
-    path: '/:id',
+    path: '/{id}',
     summary: 'Delete a document by ID',
     request: {
       params: z.object({
@@ -169,16 +199,32 @@ app.openapi(
           'application/json': {
             schema: z.object({
               id: z.number(),
+              content: z.string(),
             }),
           },
         },
         description: 'Delete a document by ID',
       },
+      404: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              error: z.string(),
+            }),
+          },
+        },
+        description: 'Document not found',
+      },
     },
   }),
-  (c) => {
-    const id = c.req.param('id');
-    return c.json({ id: Number.parseInt(id) });
+  async (c) => {
+    const id = Number.parseInt(c.req.param('id'));
+    const doc = await deleteDocument(id);
+    if (doc) {
+      return c.json(doc, 200);
+    } else {
+      return c.json({ error: 'Document not found' }, 404);
+    }
   },
 );
 
