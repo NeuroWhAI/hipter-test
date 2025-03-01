@@ -1,10 +1,8 @@
 {
-  "name": "nodejs-typescript-boilerplate",
-  "version": "1.0.14",
-  "description": "A Node.js boilerplate app",
+  "name": "hipter-test",
+  "version": "1.0.0",
+  "description": "Test a vector store",
   "author": "NeuroWhAI",
-  "repository": "NeuroWhAI/nodejs-typescript-template",
-  "license": "MIT",
   "main": "index.ts",
   "type": "module",
   "private": true,

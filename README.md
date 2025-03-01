@@ -1,3 +1,3 @@
-# 🚀 Node.js TypeScript Boilerplate
+# hipter test
 
-Modified for general app development.
+hono + kysely + pgvector 이용하여 힙하게 벡터 저장소 테스트.
