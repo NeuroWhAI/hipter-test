@@ -1,7 +1,10 @@
 import { env } from '@/env';
 import { logger } from '@/logger';
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
+import { swaggerUI } from '@hono/swagger-ui';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { docApp } from './routes/doc';
+import { docSearchApp } from './routes/doc-search';
 
 logger.info(`Starting up in ${env.NODE_ENV} mode`);
 
@@ -24,8 +27,18 @@ const onCloseSignal = () => {
 process.on('SIGINT', onCloseSignal);
 process.on('SIGTERM', onCloseSignal);
 
-const app = new Hono();
-app.get('/', (c) => c.text('Hello Node.js!'));
+const app = new OpenAPIHono();
+app.route('/api/doc', docApp);
+app.route('/api/doc-search', docSearchApp);
+
+app.get('/api-docs', swaggerUI({ url: '/api/api-docs' }));
+app.doc('/api/api-docs', {
+  openapi: '3.0.0',
+  info: {
+    version: '1.0.0',
+    title: 'Hipter Test',
+  },
+});
 
 const server = serve(
   {
