@@ -15,8 +15,8 @@ COPY . .
 # Build the TypeScript files
 RUN npm run build
 
-# Expose port 8080
-EXPOSE 8080
+# Expose port
+EXPOSE 3000
 
 # Start the app
 ENV NODE_ENV=production
