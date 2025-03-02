@@ -1,3 +1,4 @@
+import { cosineDistance } from 'pgvector/kysely';
 import { db } from './database';
 import type { Document, DocumentUpdate, NewDocument } from './types';
 
@@ -19,4 +20,13 @@ export async function updateDocument(id: number, doc: DocumentUpdate): Promise<P
 
 export async function deleteDocument(id: number): Promise<Omit<Document, 'embedding'> | undefined> {
   return await db.deleteFrom('documents').where('id', '=', id).returning(['id', 'content']).executeTakeFirst();
+}
+
+export async function findSimilarDocuments(embedding: number[], topK: number): Promise<Omit<Document, 'embedding'>[]> {
+  return await db
+    .selectFrom('documents')
+    .select(['id', 'content'])
+    .orderBy(cosineDistance('embedding', embedding))
+    .limit(topK)
+    .execute();
 }

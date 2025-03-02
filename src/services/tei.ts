@@ -30,7 +30,7 @@ const rerankResSchema = z.array(
   }),
 );
 
-export async function rerank(query: string, texts: string[]): Promise<{ text: string; score: number }[]> {
+export async function rerank(query: string, texts: string[]): Promise<z.infer<typeof rerankResSchema>> {
   const res = await fetch(env.TEI_RERANK_API_URL, {
     method: 'POST',
     headers: {
@@ -45,7 +45,5 @@ export async function rerank(query: string, texts: string[]): Promise<{ text: st
     throw new Error(json);
   }
 
-  const rerankRes = await rerankResSchema.parseAsync(json);
-
-  return rerankRes.map((r) => ({ text: texts[r.index], score: r.score }));
+  return await rerankResSchema.parseAsync(json);
 }
