@@ -24,6 +24,7 @@ app.openapi(
               z.object({
                 id: z.number(),
                 content: z.string(),
+                score: z.number(),
               }),
             ),
           },
