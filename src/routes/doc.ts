@@ -1,5 +1,7 @@
 import { createDocument, deleteDocument, findAllDocuments, findDocumentById, updateDocument } from '@/db/document-repo';
+import { embed } from '@/services/tei';
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import pgvector from 'pgvector/kysely';
 
 const app = new OpenAPIHono();
 
@@ -64,7 +66,13 @@ app.openapi(
   }),
   async (c) => {
     const newDoc = c.req.valid('json');
-    const res = await createDocument(newDoc);
+
+    const embedding = await embed(newDoc.content);
+    const res = await createDocument({
+      embedding: pgvector.toSql(embedding),
+      ...newDoc,
+    });
+
     return c.json(res);
   },
 );
@@ -169,7 +177,13 @@ app.openapi(
   async (c) => {
     const id = Number.parseInt(c.req.param('id'));
     const doc = c.req.valid('json');
-    const res = await updateDocument(id, doc);
+
+    const embedding = await embed(doc.content);
+    const res = await updateDocument(id, {
+      embedding: pgvector.toSql(embedding),
+      ...doc,
+    });
+
     if (res) {
       return c.json(res, 200);
     } else {
