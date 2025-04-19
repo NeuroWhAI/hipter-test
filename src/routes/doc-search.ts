@@ -1,9 +1,17 @@
 import { findSimilarDocuments } from '@/db/document-repo';
 import { embed, rerank } from '@/services/tei';
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
-import { zValidator } from '@hono/zod-validator';
+import { memCache } from 'hono-mem-cache';
 
 const app = new OpenAPIHono();
+
+app.use(
+  memCache({
+    max: 10,
+    ttl: 5000,
+    key: (c) => `${c.req.method}:${c.req.url}`,
+  }),
+);
 
 app.openapi(
   createRoute({
